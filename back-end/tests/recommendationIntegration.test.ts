@@ -125,15 +125,63 @@ describe("Get - /recommendations", () => {
     await prisma.recommendation.create({
       data: recommendation2,
     });
-
-    // for (let i = 0; i < 12; i++) {
-    //   const onDb = await prisma.recommendation.create({
-    //     data: recommendation,
-    //   });
-    // }
     const response = await appForTest.get("/recommendations");
     expect(response.status).toBe(200);
     expect(response.body).not.toBeNull();
     expect(response.body.length).toEqual(2);
   });
+});
+
+describe("GET /recommendations/:id", () => {
+  it("Deve responder com status 200 e retornar uma recomendação", async () => {
+    const recommendation = {
+      name: "lane8-majestic",
+      youtubeLink: "https://www.youtube.com/watch?v=ekexQdTwkak",
+      score: 27,
+    };
+    const onDb = await prisma.recommendation.create({
+      data: recommendation,
+    });
+    const response = await appForTest.get(`/recommendations/${onDb.id}`);
+    expect(response.status).toBe(200);
+    expect(response.body).not.toBeNull();
+  });
+  it("Deve retornar com status 404 sem o id não existir", async () => {
+    const response = await appForTest.get(`/recommendations/28`);
+    expect(response.status).toBe(404);
+  });
+});
+describe("GET /recommendations/random", () => {
+  it("Deve retornar com status 404 quando o banco de dados está vazio", async () => {
+    const response = await appForTest.get("/recommendations/random");
+    expect(response.status).toBe(404);
+  });
+});
+describe("GET /recommendations/top/:amount", () => {
+  it("Deve retornar status 200 e responder com um array de recomendações", async () => {
+    const recommendation1 = {
+      name: "lane8-majestic",
+      youtubeLink: "https://www.youtube.com/watch?v=ekexQdTwkak",
+      score: 27,
+    };
+    const recommendation2 = {
+      name: "lane8-majestic3",
+      youtubeLink: "https://www.youtube.com/watch?v=ekexQdTwkak",
+      score: 27,
+    };
+    await prisma.recommendation.create({
+      data: recommendation1,
+    });
+    await prisma.recommendation.create({
+      data: recommendation2,
+    });
+
+    const response = await appForTest.get("/recommendations/top/2");
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBe(2);
+  });
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
 });
