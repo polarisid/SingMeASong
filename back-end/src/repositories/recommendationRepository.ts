@@ -19,7 +19,7 @@ function findAll(findAllWhere?: FindAllWhere) {
   return prisma.recommendation.findMany({
     where: filter,
     orderBy: { id: "desc" },
-    take: 10
+    take: 10,
   });
 }
 
@@ -69,7 +69,12 @@ async function remove(id: number) {
   });
 }
 
+async function removeAll() {
+  await prisma.recommendation.deleteMany({});
+}
+
 export const recommendationRepository = {
+  removeAll,
   create,
   findAll,
   find,
